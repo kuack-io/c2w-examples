@@ -1,6 +1,6 @@
 alpine:latest
 busybox:latest
 nginx:alpine
-python:3.10-alpine
+python:3.15-alpine
 node:24-alpine
 ubuntu:24.04
