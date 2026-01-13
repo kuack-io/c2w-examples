@@ -1,0 +1,54 @@
+name: Build and Push Images
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0' # weekly at midnight on Sunday
+
+permissions:
+  contents: write
+  issues: write
+  packages: write
+
+jobs:
+  prepare-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      images: ${{ steps.set-matrix.outputs.images }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Read images.txt
+        id: set-matrix
+        run: |
+          IMAGES=$(cat images.txt | jq -R -s -c 'split("\n")[:-1]')
+          echo "images=${IMAGES}" >> $GITHUB_OUTPUT
+  build-and-push:
+    needs: prepare-matrix
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ${{ fromJson(needs.prepare-matrix.outputs.images) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Cache c2w binary
+        id: cache-c2w
+        uses: actions/cache@v5
+        with:
+          path: ${{ github.workspace }}/.cache/c2w
+          key: c2w-binary-v0.8.3
+
+      - name: Build and Push ${{ matrix.image }}
+        env:
+          C2W_CACHE_DIR: ${{ github.workspace }}/.cache/c2w
+        run: ./scripts/build_and_push.sh "${{ matrix.image }}"
