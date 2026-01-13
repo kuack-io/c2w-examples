@@ -63,7 +63,7 @@ mkdir -p build_wasm
 mv out.wasm build_wasm/
 cp Dockerfile build_wasm/Dockerfile
 
-docker buildx build --platform wasi/wasm \
+docker buildx build --platform wasi/wasm32 \
     --cache-to type=gha,mode=max \
     --cache-from type=gha \
     -t "$wasm_tag" \
