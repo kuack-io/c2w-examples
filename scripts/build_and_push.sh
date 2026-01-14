@@ -74,4 +74,9 @@ docker buildx imagetools create -t "$dest_full" \
     "$linux_tag" \
     "$wasm_tag"
 
+echo "Cleaning up..."
+rm -rf build_wasm/
+docker rmi "$IMAGE_NAME" "$linux_tag" 2>/dev/null || true
+docker system prune -f
+
 echo "Successfully published $dest_full"
