@@ -3,6 +3,10 @@ name: Build and Push Images
 on:
   push:
     branches: ["main"]
+    paths: # only trigger on changes to the files below (or manual, or scheduled)
+      - 'images.txt'
+      - 'scripts/build_and_push.sh'
+      - 'Dockerfile'
   workflow_dispatch:
   schedule:
     - cron: '0 3 1 * *' # monthly at 3:00 on the first day of the month
@@ -45,6 +49,9 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Free disk space
+        run: |
+          sudo docker system prune -af
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
       - name: Cache c2w binary
@@ -53,7 +60,6 @@ jobs:
         with:
           path: ${{ github.workspace }}/.cache/c2w
           key: c2w-binary-v0.8.3
-
       - name: Build and Push ${{ matrix.image }}
         env:
           C2W_CACHE_DIR: ${{ github.workspace }}/.cache/c2w
