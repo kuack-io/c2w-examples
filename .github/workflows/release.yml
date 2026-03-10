@@ -53,7 +53,7 @@ jobs:
         run: |
           sudo docker system prune -af
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Cache c2w binary
         id: cache-c2w
         uses: actions/cache@v5
